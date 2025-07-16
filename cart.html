@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Your Cart - PuffZero</title>
+  
+  <style>
+   /* GENERAL STYLES */
+body {
+  font-family: 'Segoe UI', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f6f7f9;
+  color: #333;
+}
+
+nav {
+  background-color: #fff;
+  padding: 1rem 2rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+nav a {
+  text-decoration: none;
+  color: #007bff;
+  font-weight: bold;
+}
+
+/* MAIN CART SECTION */
+main {
+  max-width: 800px;
+  margin: 2rem auto;
+  background-color: #ffffff;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+
+h1 {
+  margin-top: 0;
+  font-size: 1.8rem;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 1rem;
+}
+
+/* CART ITEMS LIST */
+.cart-items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.cart-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e2e2e2;
+  padding: 1rem 0;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.cart-item span {
+  font-size: 1rem;
+  flex: 1;
+}
+
+/* QUANTITY CONTROLS */
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #f1f1f1;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+}
+
+.quantity-controls button {
+  background-color: #ddd;
+  border: none;
+  padding: 0.4rem 0.7rem;
+  font-size: 1rem;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.quantity-controls button:hover {
+  background-color: #ccc;
+}
+
+.quantity-controls span {
+  min-width: 24px;
+  text-align: center;
+  font-weight: bold;
+}
+
+/* REMOVE BUTTON */
+.remove-btn {
+  background-color: crimson;
+  color: #fff;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s ease;
+}
+
+.remove-btn:hover {
+  background-color: darkred;
+}
+
+/* TOTAL & CHECKOUT */
+.cart-page p {
+  text-align: right;
+  font-size: 1.2rem;
+  margin-top: 2rem;
+}
+
+.cart-page button {
+  background-color: #28a745;
+  color: #fff;
+  font-size: 1rem;
+  padding: 0.7rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: background 0.2s ease;
+}
+
+.cart-page button:hover {
+  background-color: #218838;
+}
+
+/* MOBILE RESPONSIVE */
+@media (max-width: 600px) {
+  .cart-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .quantity-controls {
+    margin: 0.5rem 0;
+  }
+
+  .cart-page p {
+    text-align: left;
+  }
+}
+
+
+.age-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.age-modal-content {
+  background: white;
+  padding: 2rem;
+  text-align: center;
+  border-radius: 10px;
+  max-width: 90%;
+  width: 400px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.3);
+}
+
+.age-modal-content h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.age-modal-content button {
+  margin: 1rem 0.5rem;
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+#age-yes {
+  background-color: #28a745;
+  color: white;
+}
+
+#age-no {
+  background-color: #dc3545;
+  color: white;
+}
+
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html">⬅ Back to Shop</a>
+  </nav>
+
+  <main>
+    <section class="cart-page" aria-label="Shopping Cart">
+      <h1>Your Cart</h1>
+      <ul id="cart-items" class="cart-items"></ul>
+      <p><strong>Total: $<span id="cart-total">0.00</span></strong></p>
+      <a href="checkout.html"><button>Proceed to Checkout</button></a>
+    </section>
+  </main>
+
+  <script>
+    const cartItemsList = document.getElementById('cart-items');
+    const cartTotalEl = document.getElementById('cart-total');
+    let cart = JSON.parse(localStorage.getItem('puffzero_cart')) || [];
+
+    function renderCart() {
+      cartItemsList.innerHTML = '';
+
+      if (cart.length === 0) {
+        cartItemsList.innerHTML = '<li>Your cart is empty.</li>';
+        cartTotalEl.textContent = '0.00';
+        return;
+      }
+
+      let total = 0;
+
+      cart.forEach((item, index) => {
+        const itemTotal = item.price * item.quantity;
+        total += itemTotal;
+
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <div class="cart-item">
+            <span><strong>${item.name}</strong></span>
+            <div class="quantity-controls">
+              <button class="decrease" data-index="${index}">−</button>
+              <span>${item.quantity}</span>
+              <button class="increase" data-index="${index}">+</button>
+            </div>
+            <span>$${itemTotal.toFixed(2)}</span>
+            <button class="remove-btn" data-index="${index}" aria-label="Remove ${item.name}">Remove</button>
+          </div>
+        `;
+        cartItemsList.appendChild(li);
+      });
+
+      cartTotalEl.textContent = total.toFixed(2);
+    }
+
+    // Event delegation for increase/decrease/remove
+    cartItemsList.addEventListener('click', (e) => {
+      const index = parseInt(e.target.dataset.index);
+      if (e.target.classList.contains('increase')) {
+        cart[index].quantity++;
+      } else if (e.target.classList.contains('decrease')) {
+        cart[index].quantity--;
+        if (cart[index].quantity <= 0) cart.splice(index, 1);
+      } else if (e.target.classList.contains('remove-btn')) {
+        cart.splice(index, 1);
+      } else {
+        return;
+      }
+
+      localStorage.setItem('puffzero_cart', JSON.stringify(cart));
+      renderCart();
+    });
+
+    // On load
+    renderCart();
+  </script>
+  <script src="age-check.js"></script>
+
+</body>
+</html>
